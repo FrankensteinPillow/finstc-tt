@@ -1,0 +1,50 @@
+version: '2'
+
+services:
+
+  finstc-tt:
+    image: finstc:latest
+    restart: always
+    environment:
+      DB_ADDRESS: db
+      DB_USER: finstc-user
+      DB_PASSWORD: secret-for-finstc-user
+      DB_NAME: finstc
+      LOG_LEVEL: debug
+      SERVICE_HOST: "10.50.2.10"
+      SERVICE_PORT: 3520
+    ports:
+      - 127.0.0.1:3520:3520
+    networks:
+      network_app:
+        ipv4_address: 10.50.2.10
+    depends_on:
+      - db
+
+  db:
+    image: linuxserver/mariadb:latest
+    container_name: db
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - MYSQL_ROOT_PASSWORD=mysql-root-password-1
+      - TZ=Europe/Moscow
+      - MYSQL_DATABASE=finstc
+      - MYSQL_USER=finstc-user
+      - MYSQL_PASSWORD=secret-for-finstc-user
+    volumes:
+      - db_volume:/config
+    restart: unless-stopped
+    networks:
+      - network_app
+
+volumes:
+  db_volume:
+
+networks:
+  network_app:
+    ipam:
+      driver: default
+      config:
+      - subnet: 10.50.2.0/24
+        gateway: 10.50.2.1
